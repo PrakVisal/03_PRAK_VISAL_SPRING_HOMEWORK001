@@ -43,7 +43,8 @@ public class TicketController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Ticket>>> showTickets(@RequestParam int page, @RequestParam int pageSize){
         if(page<1 || pageSize<1){
-            return null;
+            ApiResponse<List<Ticket>> error = new ApiResponse<>(false,"All tickets retrieved failed!",HttpStatus.NOT_FOUND ,null,LocalDateTime.now());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }else{
             List<Ticket> data = ticketList.stream().skip(page).limit(pageSize).toList();
             ApiResponse<List<Ticket>> response = new ApiResponse<>(true,"All tickets retrieved successfully.",HttpStatus.OK ,data,LocalDateTime.now());
@@ -54,7 +55,7 @@ public class TicketController {
     @Operation(summary = "Show Ticket by ID")
     @GetMapping("{id}")
     public ResponseEntity<ApiResponse<Ticket>> showTicketById(@PathVariable int id){
-        if(id<0 || id>ticketList.size()){
+        if(id<=0 || id>ticketList.size()){
              ApiResponse<Ticket> error = new ApiResponse<>(false,"Ticket retrieved failed.",HttpStatus.NOT_FOUND,null,LocalDateTime.now())  ;
              return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }else {
@@ -85,7 +86,7 @@ public class TicketController {
     @Operation(summary = "Update Ticket")
     @PutMapping("{id}")
     public ResponseEntity<ApiResponse<Ticket>> updateTicket(@PathVariable int id, @RequestBody RequestTicket updatedTicket){
-        if(id<0 || id>ticketList.size()){
+        if(id<=0 || id>ticketList.size()){
             ApiResponse<Ticket> error = new ApiResponse<>(false,"Tickets updated failed.",HttpStatus.NOT_FOUND,null,LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }else {
