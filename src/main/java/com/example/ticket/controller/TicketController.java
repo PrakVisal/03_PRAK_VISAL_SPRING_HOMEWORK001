@@ -50,13 +50,6 @@ public class TicketController {
             return ResponseEntity.ok(response);
         }
     }
-//    public List<Ticket> getTickets(@RequestParam int page, @RequestParam int pageSize){
-//        if(page<1 || pageSize<1){
-//            return null;
-//        }else{
-//            return ticketList.stream().skip(page).limit(pageSize).toList();
-//        }
-//    }
 
     @Operation(summary = "Show Ticket by ID")
     @GetMapping("{id}")
@@ -70,13 +63,6 @@ public class TicketController {
             return ResponseEntity.ok(response);
         }
     }
-//    public Ticket getTicketId(@PathVariable int id){
-//        if(id<0 || id>ticketList.size()){
-//            return null;
-//        }else {
-//            return ticketList.get(id-1);
-//        }
-//    }
 
     @Operation(summary = "Search by Name")
     @GetMapping("/search")
@@ -95,21 +81,13 @@ public class TicketController {
             return ResponseEntity.ok(response);
         }
     }
-//    public List<Ticket> searchTicketName(@RequestParam String name){
-//        List<Ticket> foundTicket = new ArrayList<>();
-//        for(Ticket findTicket : ticketList){
-//            if(findTicket.getPassengerName().toLowerCase().contains(name.toLowerCase())){
-//                foundTicket.add(findTicket);
-//            }
-//        }
-//        return foundTicket;
-//    }
 
     @Operation(summary = "Update Ticket")
     @PutMapping("{id}")
-    public String updateTicket(@PathVariable int id,@RequestBody RequestTicket updatedTicket){
+    public ResponseEntity<ApiResponse<Ticket>> updateTicket(@PathVariable int id, @RequestBody RequestTicket updatedTicket){
         if(id<0 || id>ticketList.size()){
-            return null;
+            ApiResponse<Ticket> error = new ApiResponse<>(false,"Tickets updated failed.",HttpStatus.NOT_FOUND,null,LocalDateTime.now());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }else {
             for(Ticket findTicket : ticketList){
                 if(findTicket.getTicketId() == id){
@@ -121,32 +99,39 @@ public class TicketController {
                     findTicket.setPaymentStatus(updatedTicket.isPaymentStatus());
                 }
             }
+            ApiResponse<Ticket> response = new ApiResponse<>(true,"Tickets updated successfully.",HttpStatus.OK,ticketList.get(id-1),LocalDateTime.now());
+            return ResponseEntity.ok(response);
         }
-        return "Updated successfully";
     }
 
     @Operation(summary = "Delete Ticket")
     @DeleteMapping("{id}")
-    public String deleteTicket(@PathVariable int id){
-        if(id<0 || id>ticketList.size()){
-            return null;
-        }else {
-            for(Ticket findTicket : ticketList){
-                if(findTicket.getTicketId()== id){
-                    ticketList.remove((findTicket));
-                    return "Deleted successfully";
-                }
+    public ResponseEntity<ApiResponse<Ticket>> deleteTicket(@PathVariable int id){
+        for(Ticket findTicket : ticketList){
+            if(findTicket.getTicketId() == id){
+                ticketList.remove(findTicket);
+                ApiResponse<Ticket> response = new ApiResponse<>(true,"Ticket was deleted successfully",HttpStatus.OK,findTicket,LocalDateTime.now());
+                return ResponseEntity.ok(response);
             }
-            return "Deleted failed";
         }
+        ApiResponse<Ticket> error = new ApiResponse<>(true,("No ticket found with ID:"+id   ),HttpStatus.NOT_FOUND,null,LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error) ;
     }
     public enum Option{
         BOOKED,CANCELED, COMPLETED
     }
     @Operation(summary = "Filter Tickets")
     @GetMapping("/filter")
-    public List<Ticket> filterTickets(@RequestParam Option ticketStatus, @RequestParam LocalDate travelDate){
-       return ticketList.stream().filter(data-> (data.getTicketStatus().equalsIgnoreCase(String.valueOf(ticketStatus)) && data.getTravelDate().equals(travelDate))).toList();
+    public ResponseEntity<ApiResponse<List<Ticket>>> filterTickets(@RequestParam Option ticketStatus, @RequestParam LocalDate travelDate){
+       for(Ticket findTicket : ticketList){
+           if(findTicket.getTravelDate()!=travelDate){
+               ApiResponse<List<Ticket>> error = new ApiResponse<>(false,"Filtered tickets failed!.",HttpStatus.NOT_FOUND,null,LocalDateTime.now());
+               return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+           }
+       }
+       List<Ticket> dataFiltered = ticketList.stream().filter(data-> (data.getTicketStatus().equalsIgnoreCase(String.valueOf(ticketStatus)) && data.getTravelDate().equals(travelDate))).toList();
+       ApiResponse<List<Ticket>> response = new ApiResponse<>(true,"Filtered tickets successfully.",HttpStatus.OK,dataFiltered,LocalDateTime.now());
+       return ResponseEntity.ok(response);
     }
 }
 

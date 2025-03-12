@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class Ticket {
     private int ticketId;
     private String passengerName;
