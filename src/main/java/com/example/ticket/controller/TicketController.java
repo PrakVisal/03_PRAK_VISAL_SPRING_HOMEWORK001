@@ -34,7 +34,6 @@ public class TicketController {
     @Operation(summary = "Add ticket")
     @PostMapping
     public List<Ticket> addTicket(@RequestBody Ticket ticket){
-        ticket.setTicketId(ticket.getTicketId()+1);
         ticketList.add(ticket);
         return ticketList;
     }
